@@ -4,7 +4,7 @@
 **Scope:** The HYPR Windows desktop client — known across its lifetime as the **Workforce Access Client (WFA)**, then **HYPR Passwordless for Windows**, under the **HYPR Authenticate** platform brand. Covers what it is, how it works, and how it integrates with ("hooks into") Windows.
 **Audience:** Security research / technical.
 
-> **Method & reliability note.** Assembled from public sources: HYPR's own documentation (`docs.hypr.com` = current, `classicdocs.hypr.com` = legacy v7–v8.x, `get.hypr.com` = end-user guides, release-notes tree), HYPR marketing (`hypr.com`), Microsoft/third-party references on Windows credential providers, and industry press. The environment's network policy blocked direct page fetches, so HYPR doc content here was read via search-engine extraction plus a delegated research pass over the same doc tree, **not** full-text retrieval of every page. **Vendor claims are labeled.** Inferences are flagged. HYPR versions behavior per release (7.x–11.x observed); value names, defaults, platform minimums, and UI changed across releases — confirm anything version-sensitive against the docs for the specific deployed build. The **current docs path segment for all Windows/macOS client pages is `pwc` ("Passwordless Client")**: `/docs/auth/authInstallCfg/authInstallCfgPwc/...`. Source URLs: [§16](#16-sources).
+> **Method & reliability note.** Assembled from public sources: HYPR's own documentation (`docs.hypr.com` = current, `classicdocs.hypr.com` = legacy v7–v8.x, `get.hypr.com` = end-user guides, release-notes tree), HYPR marketing (`hypr.com`), Microsoft/third-party references on Windows credential providers, and industry press. The environment's network policy blocked direct page fetches, so HYPR doc content here was read via search-engine extraction plus a delegated research pass over the same doc tree, **not** full-text retrieval of every page. **Vendor claims are labeled.** Inferences are flagged. HYPR versions behavior per release (7.x–11.x observed); value names, defaults, platform minimums, and UI changed across releases — confirm anything version-sensitive against the docs for the specific deployed build. The **current docs path segment for all Windows/macOS client pages is `pwc` ("Passwordless Client")**: `/docs/auth/authInstallCfg/authInstallCfgPwc/...`. Source URLs: [§17](#17-sources).
 
 ---
 
@@ -253,7 +253,39 @@ Every Windows upgrade entry notes *"Reboot required if upgrading from 7.6 or bel
 
 ---
 
-## 15. Gaps / not independently verified
+## 15. Vulnerability & advisory history (independent / third-party)
+
+This is the material that does **not** come from HYPR's own product docs — CVE records, a third-party pentest advisory, and an operational incident. It is the most useful independent signal for a researcher, and also the most **scrubbed by aggregators**: CVSS scores and affected-version ranges below are drawn from CVE aggregators (OpenCVE, Feedly, INCIBE, CyberStrike, GCVE, imfht) because the environment blocked direct fetches of **NVD** and HYPR's own **[security advisories page](https://hypr.com/security-advisories)**. **Treat all scores/ranges as leads to confirm against NVD and HYPR's advisory page** — aggregators disagree sharply (one CVE below is rated 3.7 *Low* by one source and 8.8 *High* by another). HYPR acts as its own **CNA**. Aggregators list on the order of **~18 HYPR CVEs** total. ([OpenCVE — HYPR](https://app.opencve.io/cve/?vendor=hypr), [OpenCVE — Workforce Access](https://app.opencve.io/cve/?product=workforce_access&vendor=hypr), [Feedly — HYPR](https://feedly.com/cve/vendors/hypr))
+
+### 15.1 CVE table (Windows-relevant first)
+
+| CVE | Product / platform | Class (CWE) | Affected → fixed | Aggregator CVSS (conflicting) | Notes |
+|---|---|---|---|---|---|
+| **CVE-2022-3258** | Workforce Access **(Windows)** | Incorrect permission assignment → **authentication abuse** | `< 7.7.1` | **3.7 Low ↔ 8.8 High** (wide disagreement) | CISA SSVC: exploitation *none*, *not automatable*. ([NVD](https://nvd.nist.gov/vuln/detail/CVE-2022-3258), [INCIBE](https://www.incibe.es/en/incibe-cert/early-warning/vulnerabilities/cve-2022-3258)) |
+| **CVE-2023-5097** | Workforce Access **(Windows)** | **Path traversal** / improper input validation (CWE-22) | `< 8.7` | 5.5 ↔ 7.0 | ([NVD](https://nvd.nist.gov/view/vuln/detail?vulnId=CVE-2023-5097)) |
+| **CVE-2023-6334** | Workforce Access **(Windows)** | **Buffer overflow** | `< 8.7` | 5.3 ↔ 7.8 | Local/adjacent + some privileges. ([CyberStrike](https://cyberstrike.io/cve/CVE-2023-6334/)) |
+| **CVE-2023-6335** | Workforce Access **(Windows)** | **Link following** (CWE-59) | `< 8.7` | 6.4 ↔ 7.8 | Pub. 2024-01-16; no known exploit. ([INCIBE](https://www.incibe.es/en/incibe-cert/early-warning/vulnerabilities/cve-2023-6335)) |
+| **CVE-2023-6336** | Workforce Access **(macOS)** | **Link following** (CWE-59) | `< 8.7` | 7.2 (HYPR CNA) | Windows twin = CVE-2023-6335. ([NVD](https://nvd.nist.gov/vuln/detail/cve-2023-6336)) |
+| **CVE-2024-0068** | Workforce Access **(macOS)** | **Link following** (CWE-59) | `< 8.7.1` | 5.5 | ([OpenCVE](https://app.opencve.io/cve/?vendor=hypr)) |
+| **CVE-2023-0834** | Workforce Access **(macOS)** | Incorrect permission assignment → **privilege escalation** | `6.12 → < 8.1` | 7.0 ↔ 9.8 | ([GCVE](https://db.gcve.eu/cve/CVE-2023-0834)) |
+| **CVE-2022-2192** | **HYPR Server** | **Forced browsing** (CWE-425) → **privilege escalation** | `6.10 → 6.15.1` | 7.5 ↔ 8.8 | Attacker with a valid one-time **recovery token** tampers with the path on the **Magic Link** page to elevate. ([INCIBE](https://www.incibe.es/en/incibe-cert/early-warning/vulnerabilities/cve-2022-2192), [GCVE](https://db.gcve.eu/vuln/cve-2022-2192)) |
+| **CVE-2026-4522** *(aggregator id)* | HYPR Passwordless **(Windows)** | **Missing authentication → credential interception** | `< 11.1.1` *(aggregator)* vs **fixed 11.3.0** *(vendor changelog, 2026-06-24)* | — | **Version conflict unresolved** — confirm against HYPR's advisory. ([changelog](https://docs.hypr.com/docs/releaseNotes/release-notes-changelog/)) |
+
+Security-relevant pattern: the pre-8.7 Workforce Access cluster (**path traversal, buffer overflow, two link-following, incorrect-permission**) are **local privilege / file-handling** issues in the Windows/macOS client — consistent with a privileged installer + a service/credential-provider running in SYSTEM context, where symlink/permission/path handling is the classic LPE surface. Most were remediated in the **8.7** generation (the same release that renamed the client).
+
+### 15.2 Third-party pentest advisory — Compass Security CSNC-2022-003
+- **"HYPR Workforce Access / Account Takeover,"** credited to **Philipp Mao**, dated **2022-10-13**, listed on Compass Security's public advisories index; a related 2022 advisory text references **account takeover in HYPR Workforce Access `< 6.18.0`** with "update to newest version" as the fix. ([Compass Security advisories](https://www.compass-security.com/en/research/advisories))
+- **Root cause not retrievable** here (the advisory `.txt`/PDF was network-blocked). It plausibly corresponds to the 2022 **Magic Link / recovery-token** privilege-escalation class (cf. CVE-2022-2192), but that linkage is **unconfirmed** — the advisory itself should be read directly. This is the one substantive piece of **independent** (non-vendor) HYPR security research surfaced.
+
+### 15.3 Operational incident
+- HYPR reported an incident **2026-02-23 → resolved 2026-03-13**: **Workforce Access Clients were unavailable for download via Control Center**; admins were directed to HYPR Support for alternative download methods. (Availability, not a vulnerability.) ([status/incident tracker](https://pingoru.io/providers/hypr/incidents/107902))
+
+### 15.4 What public blogs did *not* yield
+Searches for an independent **reverse-engineering / DLL-and-service-name writeup**, a **HYPR engineering blog / Medium deep dive**, and **Reddit/Spiceworks deployment threads** came back **empty** — no non-vendor source names the credential-provider DLL, KSP binary, or NT service. General Windows-credential-provider tradecraft exists (e.g. `logonui.exe` COM-load + `CredProvDataModel.dll` hooking PoCs, MITRE **T1556**/**T1555**), but none is HYPR-specific. This *strengthens* the §16 conclusion that the client's binary/service internals are simply **not public** and require a lab teardown. ([LogonStealer PoC](https://github.com/S12cybersecurity/LogonStealer), [dennisbabkin: sequence of calls](https://dennisbabkin.com/blog/?t=sequence-of-calls-to-credential-provider-in-windows), [MITRE T1556.008](https://attack.mitre.org/techniques/T1556/008/))
+
+---
+
+## 16. Gaps / not independently verified
 - **CP DLL filename, KSP binary, NT service name/CLSIDs** — not public (both this pass and a delegated pass confirm only a *functional* "virtual smartcard" description). Enumerate on a live install (`sc query`, registry dump, `certutil -csplist`).
 - **No MECM/SCCM task-sequence guidance** (only Intune documented).
 - **10.5.1 opt-in upgrade flag's exact name/registry path/value** not in summary notes.
@@ -261,11 +293,12 @@ Every Windows upgrade entry notes *"Reboot required if upgrading from 7.6 or bel
 - **Current NLA-disable RDP constraint** validity in the latest release.
 - **On-device credential storage/crypto internals** (FIDO/UAF framing; "decentralized/no shared secret" = vendor claim).
 - **Founder/funding** specifics conflict across secondary sources; minor date conflict on 8.7.0 (Dec 6 vs Dec 13).
-- **All HYPR doc content here was read via search extraction / delegated research, not direct full-page fetch** (environment network policy blocked `docs.hypr.com` et al.). To raise to primary-source fidelity, broaden the environment's Network access (title-bar cloud-environment menu → Edit → add `docs.hypr.com`, `classicdocs.hypr.com`, `v9docs.hypr.com`, `www.hypr.com`, `get.hypr.com`, `learn.microsoft.com` under Allowed domains; https://code.claude.com/docs/en/cloud-environments#network-access), then re-fetch the §16 URLs in full and spot-check exact dates, value names, and the release-note tables.
+- **All HYPR doc content here was read via search extraction / delegated research, not direct full-page fetch** (environment network policy blocked `docs.hypr.com` et al.). To raise to primary-source fidelity, broaden the environment's Network access (title-bar cloud-environment menu → Edit → add `docs.hypr.com`, `classicdocs.hypr.com`, `v9docs.hypr.com`, `www.hypr.com`, `get.hypr.com`, `learn.microsoft.com` under Allowed domains; https://code.claude.com/docs/en/cloud-environments#network-access), then re-fetch the §17 URLs in full and spot-check exact dates, value names, the release-note tables, and the §15 CVE scores/ranges against NVD.
+- **CVE scores and affected-version ranges in §15 are aggregator-sourced and conflicting** — NVD and HYPR's advisory page were network-blocked and must be used as the authority. The **Compass Security CSNC-2022-003** root cause and the **CVE-2026-4522 vs 11.3.0** fixed-version conflict are unresolved.
 
 ---
 
-## 16. Sources
+## 17. Sources
 
 **HYPR — official docs (current `pwc` tree):**
 - Windows Installation & Configuration — https://docs.hypr.com/docs/auth/authInstallCfg/authInstallCfgPwc/authInstallCfgPwcInstallation/auth-install-cfg-pwc-installation-windows/
@@ -338,6 +371,31 @@ Every Windows upgrade entry notes *"Reboot required if upgrading from 7.6 or bel
 - Help Net Security — HYPR funding — https://www.helpnetsecurity.com/2022/12/02/hypr-funding/
 - Strata Maverics HYPR connector — https://docs.strata.io/docs/hypr
 - BeyondTrust PRA — HYPR — https://docs.beyondtrust.com/pra/v25.3/docs/hypr
+
+**Vulnerability / advisory sources (§15):**
+- HYPR Security Advisories (vendor CNA page) — https://hypr.com/security-advisories
+- HYPR release-notes changelog — https://docs.hypr.com/docs/releaseNotes/release-notes-changelog/
+- OpenCVE — HYPR — https://app.opencve.io/cve/?vendor=hypr
+- OpenCVE — Workforce Access — https://app.opencve.io/cve/?product=workforce_access&vendor=hypr
+- Feedly CVE — HYPR — https://feedly.com/cve/vendors/hypr
+- imfht CVE tracker — HYPR (18 CVEs) — https://cve.imfht.com/vendor/HYPR?lang=en
+- Exploit-Intel — HYPR — https://exploit-intel.com/vendor/HYPR
+- NVD — CVE-2022-3258 — https://nvd.nist.gov/vuln/detail/CVE-2022-3258
+- NVD — CVE-2023-5097 — https://nvd.nist.gov/view/vuln/detail?vulnId=CVE-2023-5097
+- NVD — CVE-2023-6336 — https://nvd.nist.gov/vuln/detail/cve-2023-6336
+- INCIBE — CVE-2023-6335 — https://www.incibe.es/en/incibe-cert/early-warning/vulnerabilities/cve-2023-6335
+- INCIBE — CVE-2022-2192 — https://www.incibe.es/en/incibe-cert/early-warning/vulnerabilities/cve-2022-2192
+- INCIBE — CVE-2022-3258 — https://www.incibe.es/en/incibe-cert/early-warning/vulnerabilities/cve-2022-3258
+- GCVE — CVE-2023-0834 — https://db.gcve.eu/cve/CVE-2023-0834
+- GCVE — CVE-2022-2192 — https://db.gcve.eu/vuln/cve-2022-2192
+- CyberStrike — CVE-2023-6334 — https://cyberstrike.io/cve/CVE-2023-6334/
+- Compass Security — public advisories index (CSNC-2022-003, "HYPR Workforce Access / Account Takeover") — https://www.compass-security.com/en/research/advisories
+- HYPR incident (client download outage, Feb–Mar 2026) — https://pingoru.io/providers/hypr/incidents/107902
+
+**Windows credential-provider tradecraft (general, not HYPR-specific):**
+- S12 — LogonStealer (CP-abuse PoC hooking `CredProvDataModel.dll`) — https://github.com/S12cybersecurity/LogonStealer
+- dennisbabkin — Sequence of calls to a credential provider — https://dennisbabkin.com/blog/?t=sequence-of-calls-to-credential-provider-in-windows
+- MITRE ATT&CK T1556.008 (Modify Authentication Process: Network Provider DLL) — https://attack.mitre.org/techniques/T1556/008/
 
 ---
 *Prepared from public sources; vendor claims labeled inline. Version-sensitive details (dates, value names, platform minimums, release-note tables) should be re-confirmed against the documentation for the specific HYPR client build in use.*
